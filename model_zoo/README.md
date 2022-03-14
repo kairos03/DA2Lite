@@ -28,3 +28,8 @@
 |DenseNet121|79.58%|7.05M|0.90G|27.45MB|[cifar100_densenet121.pt](https://drive.google.com/file/d/12clkhGhJ-ntRRhCGBRbpSFkr1EyTjBsT/view?usp=sharing)|
 |MobileNetv2|72.56%|2.41M|0.09G|9.45MB|[cifar100_mobilenetv2.pt](https://drive.google.com/file/d/1bWb0DQaEmVSqVFtwvjmkARsKkP2tsjsj/view?usp=sharing)|
 
+## ImageNet dataset
+
+|Model|Acc(%)|Param num(M)|MACs(G)|File size(MB)|Download|
+|-----|------|------------|-------|-------------|--------|
+|ResNet50|    |           |       |             |[imagenet_resnet50.pt](https://download.pytorch.org/models/resnet50-19c8e357.pth)  
