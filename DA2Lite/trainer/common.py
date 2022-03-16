@@ -2,6 +2,7 @@ import os
 import copy
 from abc import ABC, abstractmethod
 from ptflops import get_model_complexity_info
+import torch
 
 from DA2Lite.core.log import get_logger
 

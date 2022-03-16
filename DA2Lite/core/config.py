@@ -1,7 +1,10 @@
 from yacs.config import CfgNode as CN
+import random
+import warnings
 
-from torch.utils.data import DataLoader
 import torch
+import torch.backends.cudnn as cudnn
+from torch.utils.data import DataLoader
 
 import DA2Lite.network as network
 import DA2Lite.data as data
@@ -43,13 +46,16 @@ def get_cfg_defaults():
 
     _C.SAVE_DIR = "./log/"
 
+    _C.SEED = None
+
     _C.GPU = CN()
     _C.GPU.IS_USE = True
 
     _C.DISTRIBUTED = CN()
     _C.DISTRIBUTED.IS_USE = True
-    _C.DISTRIBUTED.URL = "env://"
-    _C.DISTRIBUTED.WORLD_SIZE = 2
+    _C.DISTRIBUTED.URL = "tcp://224.66.41.62:23456"
+    _C.DISTRIBUTED.WORLD_SIZE = -1
+    _C.DISTRIBUTED.RANK = -1
     _C.DISTRIBUTED.BACKEND = "nccl"
 
     return _C.clone()
@@ -111,29 +117,30 @@ class CfgUtil:
         except:
             raise ValueError(f"Invalid dataset name: {dt.NAME}")
 
-        train_dt, test_dt = dataset_func(dt.DATA_AUG, dt.IMG_SHAPE, dt.ROOT_DIR)
+        # train_dt, test_dt = dataset_func(dt.DATA_AUG, dt.IMG_SHAPE, dt.ROOT_DIR)
+        return dataset_func(dt.DATA_AUG, dt.IMG_SHAPE, dt.ROOT_DIR)
 
-        if self.cfg.DISTRIBUTED.IS_USE:
-            sampler = torch.utils.data.distributed.DistributedSampler(train_dt)
-        else:
-            sampler = None
+        # if self.cfg.DISTRIBUTED.IS_USE:
+        #     sampler = torch.utils.data.distributed.DistributedSampler(train_dt)
+        # else:
+        #     sampler = None
 
-        train_loader = DataLoader(
-            train_dt,
-            batch_size=bs,
-            shuffle=(sampler is None),
-            num_workers=dt.NUM_WORKERS,
-            pin_memory=True,
-            sampler=sampler,
-        )
-        test_loader = DataLoader(
-            test_dt,
-            batch_size=bs,
-            num_workers=dt.NUM_WORKERS,
-            pin_memory=True,
-        )
-
-        return train_loader, test_loader
+        # train_loader = DataLoader(
+        #     train_dt,
+        #     batch_size=bs,
+        #     shuffle=(sampler is None),
+        #     num_workers=dt.NUM_WORKERS,
+        #     pin_memory=True,
+        #     sampler=sampler,
+        # )
+        # test_loader = DataLoader(
+        #     test_dt,
+        #     batch_size=bs,
+        #     num_workers=dt.NUM_WORKERS,
+        #     pin_memory=True,
+        # )
+        #
+        # return train_loader, test_loader
 
     def get_loss(self):
 
@@ -179,3 +186,16 @@ class CfgUtil:
         device = torch.device("cuda" if gpu.IS_USE else "cpu")
 
         return device
+
+    def set_seed(self):
+        if self.cfg.SEED is not None:
+            random.seed(self.cfg.SEED)
+            torch.manual_seed(self.cfg.SEED)
+            cudnn.deterministic = True
+            warnings.warn(
+                "You have chosen to seed training. "
+                "This will turn on the CUDNN deterministic setting, "
+                "which can slow down your training considerably! "
+                "You may see unexpected behavior when restarting "
+                "from checkpoints."
+            )
